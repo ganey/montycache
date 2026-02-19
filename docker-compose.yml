@@ -1,0 +1,16 @@
+services:
+  montycache:
+    build: .
+    container_name: montycache
+    ports:
+      - "80:80"       # Transparent proxy / DNS-redirected traffic
+      - "443:443"     # HTTPS MITM (Requires Root CA)
+      - "8080:80"     # App/API style
+      - "3128:3128"   # Browser style forward proxy
+      - "53:53/udp"   # DNS server
+      - "53:53/tcp"   # DNS server
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./cache:/var/cache/nginx
+      - ./ssl:/etc/nginx/ssl
+    restart: unless-stopped

@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>MontyCache</Name>
+  <Repository>your-docker-repo/montycache</Repository>
+  <Registry>https://hub.docker.com/r/your-docker-repo/montycache</Registry>
+  <Network>br0</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/your-username/montycache</Support>
+  <Project>https://github.com/your-username/montycache</Project>
+  <Overview>MontyCache is a high-performance caching proxy that combines Nginx and CoreDNS. IMPORTANT: Because this container listens on ports 80 and 443, it REQUIRES its own IP address (Network Type: br0) to avoid conflicts with the Unraid WebUI. It's designed to cache static assets (JS, CSS, images) from specific domains across your network using DNS redirection and selective MITM.</Overview>
+  <Category>Network:Proxy Network:DNS</Category>
+  <WebUI/>
+  <Icon>https://raw.githubusercontent.com/your-username/montycache/main/icon.png</Icon>
+  <Description>MontyCache handles transparent HTTP/HTTPS caching for specific domains using DNS redirection and selective MITM (Root CA required on clients). Ideal for saving bandwidth on common assets.</Description>
+  
+  <Config Name="HTTP Port" Target="80" Default="80" Mode="tcp" Description="Transparent HTTP/HTTPS-First Proxy" Type="Port" Display="always" Required="true" Mask="false"/>
+  <Config Name="HTTPS Port" Target="443" Default="443" Mode="tcp" Description="HTTPS SNI Router / MITM" Type="Port" Display="always" Required="true" Mask="false"/>
+  <Config Name="DNS Port" Target="53" Default="53" Mode="udp" Description="DNS Server Port" Type="Port" Display="always" Required="true" Mask="false"/>
+  <Config Name="Forward Proxy Port" Target="3128" Default="3128" Mode="tcp" Description="Squid-compatible Forward Proxy" Type="Port" Display="always" Required="false" Mask="false"/>
+  
+  <Config Name="Cache Storage" Target="/var/cache/nginx" Default="/mnt/user/appdata/montycache/cache" Mode="rw" Description="Persistent storage for cached content" Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="SSL Storage" Target="/etc/nginx/ssl" Default="/mnt/user/appdata/montycache/ssl" Mode="rw" Description="Storage for Root CA and site certificates" Type="Path" Display="always" Required="true" Mask="false"/>
+  
+  <Config Name="Upstream DNS" Target="UPSTREAM_DNS" Default="8.8.8.8" Description="The DNS server MontyCache will use to resolve external domains." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="Cache Domains" Target="CACHE_DOMAINS" Default="httpbin.org,example.com" Description="Comma-separated list of domains to enable caching/MITM for." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="Cache Size" Target="CACHE_SIZE" Default="10g" Description="The maximum size of the cache (e.g., 10g, 500m)." Type="Variable" Display="always" Required="true" Mask="false"/>
+</Container>
