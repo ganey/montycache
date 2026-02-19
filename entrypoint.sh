@@ -5,12 +5,12 @@ UPSTREAM_DNS=${UPSTREAM_DNS:-8.8.8.8}
 CACHE_DOMAINS=${CACHE_DOMAINS:-httpbin.org,example.com}
 CACHE_SIZE=${CACHE_SIZE:-10g}
 
-echo "Configuring MontyCache with Upstream DNS: $UPSTREAM_DNS"
-echo "Caching Domains: $CACHE_DOMAINS"
+echo "Configuring MontyCache..."
+echo "Upstream DNS: $UPSTREAM_DNS"
 echo "Cache Size: $CACHE_SIZE"
 
-# Ensure SSL directory exists
-mkdir -p /etc/nginx/ssl
+# Ensure directories exist
+mkdir -p /etc/nginx/ssl /var/cache/nginx /var/log/nginx
 
 # 1. Generate Root CA if it doesn't exist
 if [ ! -f /etc/nginx/ssl/rootCA.pem ]; then
@@ -19,11 +19,6 @@ if [ ! -f /etc/nginx/ssl/rootCA.pem ]; then
     openssl req -x509 -new -nodes -key /etc/nginx/ssl/rootCA.key -sha256 -days 3650 -out /etc/nginx/ssl/rootCA.pem \
         -subj "/C=US/ST=State/L=City/O=MontyCache/CN=MontyCache-Root-CA"
 fi
-
-# Ensure Nginx can read the certificates
-chown -R nginx:nginx /etc/nginx/ssl
-chmod 644 /etc/nginx/ssl/rootCA.pem
-chmod 644 /etc/nginx/ssl/sites.pem
 
 # 2. Generate Site Certificate dynamically
 echo "Generating MITM Site Certificate for: $CACHE_DOMAINS"
@@ -36,7 +31,6 @@ subjectAltName = @alt_names
 [alt_names]
 EOF
 
-# Parse domains for certificate SANs and Nginx map
 i=1
 NGINX_MAP=""
 IFS=','
@@ -54,19 +48,15 @@ openssl req -new -key /etc/nginx/ssl/sites.key -out /etc/nginx/ssl/sites.csr \
 openssl x509 -req -in /etc/nginx/ssl/sites.csr -CA /etc/nginx/ssl/rootCA.pem -CAkey /etc/nginx/ssl/rootCA.key \
     -CAcreateserial -out /etc/nginx/ssl/sites.pem -days 825 -sha256 -extfile /etc/nginx/ssl/sites.ext
 
-# 3. Update Corefile with Upstream DNS and Auto-Redirection
-# Get the container's IP address
+# 3. Update Corefile with Auto-Redirection
 CONTAINER_IP=$(hostname -i | awk '{print $1}')
-echo "Container IP detected as: $CONTAINER_IP"
+echo "Container IP: $CONTAINER_IP"
 
-# Start building the Corefile
 COREFILE_CONTENT=". {
     forward . $UPSTREAM_DNS
     log
     errors
 "
-
-# Add A records for each domain in CACHE_DOMAINS
 IFS=','
 for domain in $CACHE_DOMAINS; do
     COREFILE_CONTENT="$COREFILE_CONTENT
@@ -81,27 +71,26 @@ for domain in $CACHE_DOMAINS; do
         fallthrough
     }"
 done
-
-# Close and write the Corefile
-COREFILE_CONTENT="$COREFILE_CONTENT
-}"
-echo "$COREFILE_CONTENT" > /etc/coredns/Corefile
-echo "CoreDNS configured with auto-redirection to $CONTAINER_IP"
+echo "$COREFILE_CONTENT
+}" > /etc/coredns/Corefile
 
 # 4. Inject Dynamic Config into nginx.conf
-# We use sed to replace the placeholder in nginx.conf
 sed -i "s|resolver .* valid=30s;|resolver $UPSTREAM_DNS valid=30s;|g" /etc/nginx/nginx.conf
 sed -i "s|resolver .*;|resolver $UPSTREAM_DNS;|g" /etc/nginx/nginx.conf
 sed -i "s|max_size=[0-9]*[g|m]|max_size=$CACHE_SIZE|g" /etc/nginx/nginx.conf
-
-# Replace the map block in nginx.conf
-# This finds the map block and replaces its contents
 sed -i '/map $ssl_preread_server_name $backend_name {/,/}/c\    map $ssl_preread_server_name $backend_name {\n'"$NGINX_MAP"'        default $ssl_preread_server_name:443;\n    }' /etc/nginx/nginx.conf
 
-# Start CoreDNS in the background
+# 5. Fix permissions for Alpine Nginx
+chown -R root:root /etc/nginx /var/cache/nginx /var/log/nginx
+chmod -R 755 /etc/nginx /var/cache/nginx /var/log/nginx
+
+# TEST: Check Nginx configuration before starting
+echo "Testing Nginx configuration..."
+/usr/sbin/nginx -t || { echo "Nginx config check failed!"; exit 1; }
+
+# Start Services
 echo "Starting CoreDNS..."
 coredns -conf /etc/coredns/Corefile &
 
-# Start Nginx in the foreground
 echo "Starting Nginx..."
-nginx -g "daemon off;"
+exec /usr/sbin/nginx -g "daemon off;"
