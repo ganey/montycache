@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>MontyCache</Name>
-  <Repository>your-docker-repo/montycache</Repository>
-  <Registry>https://hub.docker.com/r/your-docker-repo/montycache</Registry>
+  <Repository>ghcr.io/ganey/montycache:main</Repository>
+  <Registry>https://github.com/ganey/montycache/pkgs/container/montycache</Registry>
   <Network>br0</Network>
   <MyIP/>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
-  <Support>https://github.com/your-username/montycache</Support>
-  <Project>https://github.com/your-username/montycache</Project>
+  <Support>https://github.com/ganey/montycache</Support>
+  <Project>https://github.com/ganey/montycache</Project>
   <Overview>MontyCache is a high-performance caching proxy that combines Nginx and CoreDNS. IMPORTANT: Because this container listens on ports 80 and 443, it REQUIRES its own IP address (Network Type: br0) to avoid conflicts with the Unraid WebUI. It's designed to cache static assets (JS, CSS, images) from specific domains across your network using DNS redirection and selective MITM.</Overview>
   <Category>Network:Proxy Network:DNS</Category>
   <WebUI/>
-  <Icon>https://raw.githubusercontent.com/your-username/montycache/main/icon.png</Icon>
+  <Icon>https://raw.githubusercontent.com/ganey/montycache/main/icon.png</Icon>
   <Description>MontyCache handles transparent HTTP/HTTPS caching for specific domains using DNS redirection and selective MITM (Root CA required on clients). Ideal for saving bandwidth on common assets.</Description>
   
   <Config Name="HTTP Port" Target="80" Default="80" Mode="tcp" Description="Transparent HTTP/HTTPS-First Proxy" Type="Port" Display="always" Required="true" Mask="false"/>
