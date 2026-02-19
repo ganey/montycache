@@ -20,6 +20,11 @@ if [ ! -f /etc/nginx/ssl/rootCA.pem ]; then
         -subj "/C=US/ST=State/L=City/O=MontyCache/CN=MontyCache-Root-CA"
 fi
 
+# Ensure Nginx can read the certificates
+chown -R nginx:nginx /etc/nginx/ssl
+chmod 644 /etc/nginx/ssl/rootCA.pem
+chmod 644 /etc/nginx/ssl/sites.pem
+
 # 2. Generate Site Certificate dynamically
 echo "Generating MITM Site Certificate for: $CACHE_DOMAINS"
 cat > /etc/nginx/ssl/sites.ext <<EOF
