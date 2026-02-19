@@ -98,6 +98,10 @@ sed -i "s|max_size=[0-9]*[g|m]|max_size=$CACHE_SIZE|g" /etc/nginx/nginx.conf
 # This finds the map block and replaces its contents
 sed -i '/map $ssl_preread_server_name $backend_name {/,/}/c\    map $ssl_preread_server_name $backend_name {\n'"$NGINX_MAP"'        default $ssl_preread_server_name:443;\n    }' /etc/nginx/nginx.conf
 
-# Start CoreDNS and Nginx
+# Start CoreDNS in the background
+echo "Starting CoreDNS..."
 coredns -conf /etc/coredns/Corefile &
+
+# Start Nginx in the foreground
+echo "Starting Nginx..."
 nginx -g "daemon off;"
