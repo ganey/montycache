@@ -10,10 +10,10 @@ REDIRECT_ALL=${REDIRECT_ALL:-false}
 
 echo "Configuring MontyCache..."
 echo "Upstream DNS: $UPSTREAM_DNS"
-echo "Redirect All: $REDIRECT_ALL"
 echo "Cache Size: $CACHE_SIZE"
 echo "Min Uses: $CACHE_MIN_USES"
 echo "Cache Duration: $CACHE_DURATION"
+echo "Redirect All: $REDIRECT_ALL"
 
 # Ensure directories exist
 mkdir -p /etc/nginx/ssl /var/cache/nginx /var/log/nginx
@@ -57,36 +57,40 @@ openssl x509 -req -in /etc/nginx/ssl/sites.csr -CA /etc/nginx/ssl/rootCA.pem -CA
 
 # 3. Update Corefile with Auto-Redirection
 CONTAINER_IP=$(hostname -i | awk '{print $1}')
-echo "Container IP: $CONTAINER_IP"
+echo "Container IP detected as: $CONTAINER_IP"
 
 COREFILE_CONTENT=". {
-    forward . $UPSTREAM_DNS
     log
     errors
 "
-IFS=','
-for domain in $CACHE_DOMAINS; do
-    COREFILE_CONTENT="$COREFILE_CONTENT
-    template IN A $domain {
-        match .*$domain
-        answer \"{{ .Name }} 60 IN A $CONTAINER_IP\"
-        fallthrough
-    }"
-done
 
-# Optional: Redirect ALL traffic to MontyCache
 if [ "$REDIRECT_ALL" = "true" ]; then
-    echo "WARNING: REDIRECT_ALL is enabled. All A-record DNS queries will point to MontyCache."
+    echo "Enabling Global Redirection (REDIRECT_ALL=true)"
     COREFILE_CONTENT="$COREFILE_CONTENT
     template IN A . {
-        match .
+        answer \"{{ .Name }} 60 IN A $CONTAINER_IP\"
+    }"
+else
+    IFS=','
+    for domain in $CACHE_DOMAINS; do
+        COREFILE_CONTENT="$COREFILE_CONTENT
+    template IN A $domain {
+        match .*\.$domain
+        answer \"{{ .Name }} 60 IN A $CONTAINER_IP\"
+        fallthrough
+    }
+    template IN A $domain {
+        match $domain
         answer \"{{ .Name }} 60 IN A $CONTAINER_IP\"
         fallthrough
     }"
+    done
 fi
 
-echo "$COREFILE_CONTENT
-}" > /etc/coredns/Corefile
+COREFILE_CONTENT="$COREFILE_CONTENT
+    forward . $UPSTREAM_DNS
+}"
+echo "$COREFILE_CONTENT" > /etc/coredns/Corefile
 
 # 4. Inject Dynamic Config into nginx.conf
 sed -i "s|resolver .*;|resolver $UPSTREAM_DNS valid=30s;|g" /etc/nginx/nginx.conf
@@ -106,14 +110,12 @@ chmod -R 777 /var/cache/nginx
 chmod -R 755 /etc/nginx /var/log/nginx
 
 # TEST: Check Nginx configuration before starting
-echo "Testing Nginx configuration..."
 /usr/sbin/nginx -t || { echo "Nginx config check failed!"; exit 1; }
 
 echo "Starting CoreDNS..."
 coredns -conf /etc/coredns/Corefile &
 
 echo "Starting Nginx..."
-# Start Nginx in the background so we can check ports, then foreground it
 nginx -g "daemon off;" &
 NGINX_PID=$!
 
@@ -122,5 +124,4 @@ echo "--- LISTENING PORTS ---"
 netstat -tulnp
 echo "----------------------------"
 
-# Keep the script alive by waiting for Nginx
 wait $NGINX_PID
