@@ -65,11 +65,12 @@ COREFILE_CONTENT=". {
 IFS=','
 for domain in $CACHE_DOMAINS; do
     COREFILE_CONTENT="$COREFILE_CONTENT
-    template IN A $domain {
-        match .*$domain
-        answer \"{{ .Name }} 60 IN A $CONTAINER_IP\"
-        fallthrough
-    }"
+        template IN A $domain {
+            match (.*\\.)?${domain}$
+            answer \"{{ .Name }} 60 IN A $CONTAINER_IP\"
+            fallthrough
+        }
+    "
 done
 echo "$COREFILE_CONTENT
 }" > /etc/coredns/Corefile
