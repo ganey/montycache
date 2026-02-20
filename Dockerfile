@@ -43,6 +43,7 @@ COPY --from=builder /usr/src/coredns/coredns /usr/bin/coredns
 RUN mkdir -p /var/cache/nginx /var/log/nginx /etc/coredns && \
     ln -sf /dev/stdout /var/log/nginx/access.log && \
     ln -sf /dev/stderr /var/log/nginx/error.log && \
+    rm -rf /etc/nginx/conf.d /etc/nginx/http.d /etc/nginx/nginx.conf.default && \
     chown -R nginx:nginx /var/cache/nginx /var/log/nginx
 
 COPY entrypoint.sh /usr/bin/entrypoint.sh
