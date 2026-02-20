@@ -71,6 +71,13 @@ MontyCache uses SNI-based routing. When you visit an HTTPS site:
 - **3-Use Rule:** Files are only stored after they have been requested **3 times**.
 - **Port 80 Fallback:** Requests to port 80 are fetched over HTTPS by default to maximize security and caching potential.
 
+## 📊 Monitoring
+
+MontyCache includes a real-time traffic and cache statistics dashboard.
+
+1. **Visit:** `http://<YOUR-MONTYCACHE-IP>/status`
+2. **View:** Real-time data on cache hits/misses, traffic throughput, and connected clients.
+
 ---
 
 ## 🛠️ Maintenance

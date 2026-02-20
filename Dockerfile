@@ -4,6 +4,7 @@ FROM alpine:3.18 as builder
 ENV NGINX_VERSION 1.25.2
 ENV PROXY_CONNECT_VERSION 0.0.5
 ENV COREDNS_VERSION 1.11.1
+ENV VTS_VERSION 0.2.2
 
 RUN apk add --no-cache --virtual .build-deps \
     gcc libc-dev make openssl-dev pcre2-dev zlib-dev linux-headers curl patch
@@ -15,6 +16,10 @@ RUN curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar
 # Get Proxy Connect module
 RUN curl -fSL https://github.com/chobits/ngx_http_proxy_connect_module/archive/refs/tags/v$PROXY_CONNECT_VERSION.tar.gz -o proxy_connect.tar.gz && \
     tar -zxC /usr/src -f proxy_connect.tar.gz
+
+# Get VTS module
+RUN curl -fSL https://github.com/vozlt/nginx-module-vts/archive/refs/tags/v$VTS_VERSION.tar.gz -o vts.tar.gz && \
+    tar -zxC /usr/src -f vts.tar.gz
 
 # Get CoreDNS binary
 RUN mkdir -p /usr/src/coredns && \
@@ -28,7 +33,8 @@ RUN patch -p1 < /usr/src/ngx_http_proxy_connect_module-$PROXY_CONNECT_VERSION/pa
         --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx \
         --conf-path=/etc/nginx/nginx.conf --with-http_ssl_module \
         --with-stream --with-stream_ssl_module --with-stream_ssl_preread_module \
-        --add-module=/usr/src/ngx_http_proxy_connect_module-$PROXY_CONNECT_VERSION && \
+        --add-module=/usr/src/ngx_http_proxy_connect_module-$PROXY_CONNECT_VERSION \
+        --add-module=/usr/src/nginx-module-vts-$VTS_VERSION && \
     make -j$(getconf _NPROCESSORS_ONLN) && make install
 
 # Final Image

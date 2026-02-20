@@ -85,6 +85,7 @@ sed -i "s|resolver .* valid=30s;|resolver $UPSTREAM_DNS valid=30s;|g" /etc/nginx
 sed -i "s|max_size=[0-9]*[g|m]|max_size=$CACHE_SIZE|g" /etc/nginx/nginx.conf
 sed -i "s|__CACHE_MIN_USES__|$CACHE_MIN_USES|g" /etc/nginx/nginx.conf
 sed -i "s|__CACHE_DURATION__|$CACHE_DURATION|g" /etc/nginx/nginx.conf
+sed -i "s|__CONTAINER_IP__|$CONTAINER_IP|g" /etc/nginx/nginx.conf
 sed -i '/map $ssl_preread_server_name $backend_name {/,/}/c\    map $ssl_preread_server_name $backend_name {\n'"$NGINX_MAP"'        default $ssl_preread_server_name:443;\n    }' /etc/nginx/nginx.conf
 
 # 5. Force logs to stdout/stderr

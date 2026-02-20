@@ -9,9 +9,9 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/ganey/montycache</Support>
   <Project>https://github.com/ganey/montycache</Project>
-  <Overview>MontyCache is a high-performance caching proxy that combines Nginx and CoreDNS. IMPORTANT: Because this container listens on ports 80 and 443, it REQUIRES its own IP address (Network Type: br0) to avoid conflicts with the Unraid WebUI. It's designed to cache static assets (JS, CSS, images) from specific domains across your network using DNS redirection and selective MITM.</Overview>
+  <Overview>MontyCache is a high-performance caching proxy that combines Nginx and CoreDNS. IMPORTANT: Because this container listens on ports 80 and 443, it REQUIRES its own IP address (Network Type: br0) to avoid conflicts with the Unraid WebUI. It features a real-time status dashboard at http://[IP]/status. It's designed to cache static assets (JS, CSS, images) from specific domains across your network using DNS redirection and selective MITM.</Overview>
   <Category>Network:Proxy Network:DNS</Category>
-  <WebUI>http://[IP]:[PORT:80]/ca.pem</WebUI>
+  <WebUI>http://[IP]:[PORT:80]/status</WebUI>
   <Icon>https://raw.githubusercontent.com/ganey/montycache/main/icon.svg</Icon>
   <Description>MontyCache handles transparent HTTP/HTTPS caching for specific domains using DNS redirection and selective MITM (Root CA required on clients). Ideal for saving bandwidth on common assets.</Description>
   
