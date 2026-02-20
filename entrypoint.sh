@@ -93,7 +93,8 @@ ln -sf /dev/stderr /var/log/nginx/error.log
 
 # 6. Fix permissions for Alpine Nginx
 chown -R root:root /etc/nginx /var/cache/nginx /var/log/nginx
-chmod -R 755 /etc/nginx /var/cache/nginx /var/log/nginx
+chmod -R 777 /var/cache/nginx
+chmod -R 755 /etc/nginx /var/log/nginx
 
 # TEST: Check Nginx configuration before starting
 echo "Testing Nginx configuration..."
