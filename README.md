@@ -71,6 +71,20 @@ MontyCache uses SNI-based routing. When you visit an HTTPS site:
 - **3-Use Rule:** Files are only stored after they have been requested **3 times**.
 - **Port 80 Fallback:** Requests to port 80 are fetched over HTTPS by default to maximize security and caching potential.
 
+---
+
+## 🌍 Universal Mode (Redirect All)
+
+Set `REDIRECT_ALL=true` to enable internet-wide HTTP caching. 
+
+> [!WARNING]
+> This mode redirects ALL DNS queries for every domain to MontyCache.
+> - **Works:** Instant caching for every HTTP site on the web.
+> - **Risks:** Non-web traffic (e.g., SSH, gaming, VPNs) using standard ports may fail if they aren't HTTP/HTTPS. 
+> - **Selective HTTPS:** HTTPS sites NOT in your `CACHE_DOMAINS` list will still be passed through transparently without errors.
+
+---
+
 ## 📊 Monitoring
 
 MontyCache includes a real-time traffic and cache statistics dashboard.

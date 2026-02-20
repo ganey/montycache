@@ -6,9 +6,11 @@ CACHE_DOMAINS=${CACHE_DOMAINS:-httpbin.org,example.com,gstatic.com}
 CACHE_SIZE=${CACHE_SIZE:-10g}
 CACHE_MIN_USES=${CACHE_MIN_USES:-3}
 CACHE_DURATION=${CACHE_DURATION:-60m}
+REDIRECT_ALL=${REDIRECT_ALL:-false}
 
 echo "Configuring MontyCache..."
 echo "Upstream DNS: $UPSTREAM_DNS"
+echo "Redirect All: $REDIRECT_ALL"
 echo "Cache Size: $CACHE_SIZE"
 echo "Min Uses: $CACHE_MIN_USES"
 echo "Cache Duration: $CACHE_DURATION"
@@ -71,6 +73,18 @@ for domain in $CACHE_DOMAINS; do
         fallthrough
     }"
 done
+
+# Optional: Redirect ALL traffic to MontyCache
+if [ "$REDIRECT_ALL" = "true" ]; then
+    echo "WARNING: REDIRECT_ALL is enabled. All A-record DNS queries will point to MontyCache."
+    COREFILE_CONTENT="$COREFILE_CONTENT
+    template IN A . {
+        match .
+        answer \"{{ .Name }} 60 IN A $CONTAINER_IP\"
+        fallthrough
+    }"
+fi
+
 echo "$COREFILE_CONTENT
 }" > /etc/coredns/Corefile
 

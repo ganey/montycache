@@ -28,4 +28,5 @@
   <Config Name="Cache Size" Target="CACHE_SIZE" Default="10g" Description="The maximum size of the cache (e.g., 10g, 500m)." Type="Variable" Display="always" Required="true" Mask="false"/>
   <Config Name="Cache Duration" Target="CACHE_DURATION" Default="60m" Description="How long to cache items for (e.g., 60m, 24h)." Type="Variable" Display="always" Required="false" Mask="false"/>
   <Config Name="Cache Min Uses" Target="CACHE_MIN_USES" Default="3" Description="How many times an item must be requested before it is cached." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Redirect All" Target="REDIRECT_ALL" Default="false" Description="Set to 'true' to redirect ALL internet DNS queries to MontyCache. Enables caching for every HTTP site, but may break non-web traffic (SSH, etc)." Type="Variable" Display="always" Required="false" Mask="false"/>
 </Container>
