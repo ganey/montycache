@@ -37,7 +37,8 @@ IFS=','
 for domain in $CACHE_DOMAINS; do
     echo "DNS.$i = $domain" >> /etc/nginx/ssl/sites.ext
     echo "DNS.$((i+1)) = *.$domain" >> /etc/nginx/ssl/sites.ext
-    NGINX_MAP="$NGINX_MAP    \"$domain\" 127.0.0.1:8443;\n    \".$domain\" 127.0.0.1:8443;\n"
+    # The dot prefix matches the domain and all subdomains
+    NGINX_MAP="$NGINX_MAP    \".$domain\" 127.0.0.1:8443;\n"
     i=$((i+2))
 done
 
