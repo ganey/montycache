@@ -26,4 +26,6 @@
   <Config Name="Upstream DNS" Target="UPSTREAM_DNS" Default="8.8.8.8" Description="The DNS server MontyCache will use to resolve external domains." Type="Variable" Display="always" Required="true" Mask="false"/>
   <Config Name="Cache Domains" Target="CACHE_DOMAINS" Default="httpbin.org,example.com" Description="Comma-separated list of domains to enable caching/MITM for." Type="Variable" Display="always" Required="true" Mask="false"/>
   <Config Name="Cache Size" Target="CACHE_SIZE" Default="10g" Description="The maximum size of the cache (e.g., 10g, 500m)." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="Cache Duration" Target="CACHE_DURATION" Default="60m" Description="How long to cache items for (e.g., 60m, 24h)." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Cache Min Uses" Target="CACHE_MIN_USES" Default="3" Description="How many times an item must be requested before it is cached." Type="Variable" Display="always" Required="false" Mask="false"/>
 </Container>

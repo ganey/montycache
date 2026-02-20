@@ -4,10 +4,14 @@
 UPSTREAM_DNS=${UPSTREAM_DNS:-8.8.8.8}
 CACHE_DOMAINS=${CACHE_DOMAINS:-httpbin.org,example.com}
 CACHE_SIZE=${CACHE_SIZE:-10g}
+CACHE_MIN_USES=${CACHE_MIN_USES:-3}
+CACHE_DURATION=${CACHE_DURATION:-60m}
 
 echo "Configuring MontyCache..."
 echo "Upstream DNS: $UPSTREAM_DNS"
 echo "Cache Size: $CACHE_SIZE"
+echo "Min Uses: $CACHE_MIN_USES"
+echo "Cache Duration: $CACHE_DURATION"
 
 # Ensure directories exist
 mkdir -p /etc/nginx/ssl /var/cache/nginx /var/log/nginx
@@ -79,6 +83,8 @@ echo "$COREFILE_CONTENT
 sed -i "s|resolver .*;|resolver $UPSTREAM_DNS;|g" /etc/nginx/nginx.conf
 sed -i "s|resolver .* valid=30s;|resolver $UPSTREAM_DNS valid=30s;|g" /etc/nginx/nginx.conf
 sed -i "s|max_size=[0-9]*[g|m]|max_size=$CACHE_SIZE|g" /etc/nginx/nginx.conf
+sed -i "s|__CACHE_MIN_USES__|$CACHE_MIN_USES|g" /etc/nginx/nginx.conf
+sed -i "s|__CACHE_DURATION__|$CACHE_DURATION|g" /etc/nginx/nginx.conf
 sed -i '/map $ssl_preread_server_name $backend_name {/,/}/c\    map $ssl_preread_server_name $backend_name {\n'"$NGINX_MAP"'        default $ssl_preread_server_name:443;\n    }' /etc/nginx/nginx.conf
 
 # 5. Force logs to stdout/stderr
