@@ -80,8 +80,7 @@ echo "$COREFILE_CONTENT
 }" > /etc/coredns/Corefile
 
 # 4. Inject Dynamic Config into nginx.conf
-sed -i "s|resolver .*;|resolver $UPSTREAM_DNS;|g" /etc/nginx/nginx.conf
-sed -i "s|resolver .* valid=30s;|resolver $UPSTREAM_DNS valid=30s;|g" /etc/nginx/nginx.conf
+sed -i "s|resolver .*;|resolver $UPSTREAM_DNS valid=30s;|g" /etc/nginx/nginx.conf
 sed -i "s|max_size=[0-9]*[g|m]|max_size=$CACHE_SIZE|g" /etc/nginx/nginx.conf
 sed -i "s|__CACHE_MIN_USES__|$CACHE_MIN_USES|g" /etc/nginx/nginx.conf
 sed -i "s|__CACHE_DURATION__|$CACHE_DURATION|g" /etc/nginx/nginx.conf
