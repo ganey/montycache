@@ -2,7 +2,7 @@
 
 # Default variables if not provided
 UPSTREAM_DNS=${UPSTREAM_DNS:-8.8.8.8}
-CACHE_DOMAINS=${CACHE_DOMAINS:-httpbin.org,example.com}
+CACHE_DOMAINS=${CACHE_DOMAINS:-httpbin.org,example.com,gstatic.com}
 CACHE_SIZE=${CACHE_SIZE:-10g}
 CACHE_MIN_USES=${CACHE_MIN_USES:-3}
 CACHE_DURATION=${CACHE_DURATION:-60m}
