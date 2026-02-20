@@ -39,6 +39,7 @@ RUN apk add --no-cache ca-certificates pcre2 zlib openssl && \
 COPY --from=builder /etc/nginx /etc/nginx
 COPY --from=builder /usr/sbin/nginx /usr/sbin/nginx
 COPY --from=builder /usr/src/coredns/coredns /usr/bin/coredns
+COPY nginx.conf /etc/nginx/nginx.conf
 
 RUN mkdir -p /var/cache/nginx /var/log/nginx /etc/coredns && \
     ln -sf /dev/stdout /var/log/nginx/access.log && \

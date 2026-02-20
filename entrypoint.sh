@@ -75,22 +75,14 @@ echo "$COREFILE_CONTENT
 }" > /etc/coredns/Corefile
 
 # 4. Inject Dynamic Config into nginx.conf
-# Update all resolvers to use UPSTREAM_DNS
 sed -i "s|resolver .*;|resolver $UPSTREAM_DNS;|g" /etc/nginx/nginx.conf
 sed -i "s|resolver .* valid=30s;|resolver $UPSTREAM_DNS valid=30s;|g" /etc/nginx/nginx.conf
 sed -i "s|max_size=[0-9]*[g|m]|max_size=$CACHE_SIZE|g" /etc/nginx/nginx.conf
 sed -i '/map $ssl_preread_server_name $backend_name {/,/}/c\    map $ssl_preread_server_name $backend_name {\n'"$NGINX_MAP"'        default $ssl_preread_server_name:443;\n    }' /etc/nginx/nginx.conf
 
-# 5. REMOVE DEFAULT CONFIGS (Crucial for Unraid/Alpine)
-rm -rf /etc/nginx/conf.d/*.conf
-rm -f /etc/nginx/http.d/*.conf
-
-# --- DEBUGGING ---
-echo "--- GENERATED NGINX CONFIG ---"
-cat /etc/nginx/nginx.conf
-echo "--- LISTENING PORTS ---"
-netstat -tulnp
-echo "----------------------------"
+# 5. Force logs to stdout/stderr
+ln -sf /dev/stdout /var/log/nginx/access.log
+ln -sf /dev/stderr /var/log/nginx/error.log
 
 # 6. Fix permissions for Alpine Nginx
 chown -R root:root /etc/nginx /var/cache/nginx /var/log/nginx
@@ -100,9 +92,18 @@ chmod -R 755 /etc/nginx /var/cache/nginx /var/log/nginx
 echo "Testing Nginx configuration..."
 /usr/sbin/nginx -t || { echo "Nginx config check failed!"; exit 1; }
 
-# Start Services
 echo "Starting CoreDNS..."
 coredns -conf /etc/coredns/Corefile &
 
 echo "Starting Nginx..."
-exec /usr/sbin/nginx -g "daemon off;"
+# Start Nginx in the background so we can check ports, then foreground it
+nginx -g "daemon off;" &
+NGINX_PID=$!
+
+sleep 2
+echo "--- LISTENING PORTS ---"
+netstat -tulnp
+echo "----------------------------"
+
+# Keep the script alive by waiting for Nginx
+wait $NGINX_PID
