@@ -40,12 +40,23 @@ EOF
 i=1
 NGINX_MAP=""
 IFS=','
+# Build Regex for CoreDNS and Map for Nginx
+DNS_REGEX=""
 for domain in $CACHE_DOMAINS; do
     echo "DNS.$i = $domain" >> /etc/nginx/ssl/sites.ext
     echo "DNS.$((i+1)) = *.$domain" >> /etc/nginx/ssl/sites.ext
-    # The dot prefix matches the domain and all subdomains
-    NGINX_MAP="$NGINX_MAP    \".$domain\" 127.0.0.1:8443;\n"
     i=$((i+2))
+    
+    # Nginx Map entry
+    NGINX_MAP="$NGINX_MAP    \".$domain\" 127.0.0.1:8443;\n"
+    
+    # CoreDNS Regex component
+    SAFE_DOMAIN=$(echo $domain | sed 's/\./\\./g')
+    if [ -z "$DNS_REGEX" ]; then
+        DNS_REGEX="(.*\\.)?$SAFE_DOMAIN$"
+    else
+        DNS_REGEX="$DNS_REGEX|(.*\\.)?$SAFE_DOMAIN$"
+    fi
 done
 
 openssl genrsa -out /etc/nginx/ssl/sites.key 2048
@@ -71,20 +82,14 @@ if [ "$REDIRECT_ALL" = "true" ]; then
         answer \"{{ .Name }} 60 IN A $CONTAINER_IP\"
     }"
 else
-    IFS=','
-    for domain in $CACHE_DOMAINS; do
-        COREFILE_CONTENT="$COREFILE_CONTENT
-    template IN A $domain {
-        match .*\.$domain
+    echo "Enabling Selective Redirection for: $CACHE_DOMAINS"
+    COREFILE_CONTENT="$COREFILE_CONTENT
+    template IN A . {
+        match \"$DNS_REGEX\"
         answer \"{{ .Name }} 60 IN A $CONTAINER_IP\"
         fallthrough
     }
-    template IN A $domain {
-        match $domain
-        answer \"{{ .Name }} 60 IN A $CONTAINER_IP\"
-        fallthrough
-    }"
-    done
+"
 fi
 
 COREFILE_CONTENT="$COREFILE_CONTENT
